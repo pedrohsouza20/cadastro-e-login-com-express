@@ -5,31 +5,13 @@ const Account = require("./Account");
 
 const crypto = require("crypto");
 
-function generateSalt() {
-  return crypto.randomBytes(16).toString("hex");
-}
-
-function sha512(password, salt) {
-  let hash = crypto.createHmac("sha512", salt); // Algoritmo de cripto sha512
-  hash.update(password);
-  hash = hash.digest("hex");
-  return {
-    salt,
-    hash,
-  };
-}
-
-function generatePassword(senha) {
-  var salt = generateSalt(16); // Vamos gerar o salt
-  var passwordAndSalt = sha512(senha, salt); // Pegamos a senha e o salt
-  // A partir daqui você pode retornar a senha ou já salvar no banco o salt e a senha
-  console.log("Senha Hash: " + passwordAndSalt.hash);
-  console.log("Salt: " + passwordAndSalt.salt);
-  return passwordAndSalt.hash, "teste", passwordAndSalt.salt;
-}
-
-generatePassword("123456");
-generatePassword("ABC123");
+const CRYPTO_SETS = {
+  algorythim: "aes-256-cbc",
+  secret: "youllneverfinditimsorrylittleboy",
+  type: "hex",
+  key: crypto.randomBytes(32),
+  iv: crypto.randomBytes(16),
+};
 
 router.get("/api/accounts", (req, res) => {
   Account.findAll()
@@ -44,14 +26,17 @@ router.get("/api/accounts", (req, res) => {
     });
 });
 
+function encryptPassword(password) {
+  const cipher = crypto.createCipheriv(
+    CRYPTO_SETS.algorythim,
+    Buffer.from(CRYPTO_SETS.key),
+    CRYPTO_SETS.iv
+  );
+  cipher.update(password);
+  return cipher.final(CRYPTO_SETS.type);
+}
+
 router.get("/api/login/", (req, res) => {
-  function getResponse(senhaLogin, saltBanco, hashBanco) {
-    let passAndSalt = sha512(senhaLogin, saltBanco);
-    console.log(
-      `senha recebida: ${senhaLogin}, salt banco: ${saltBanco}, hash banco: ${hashBanco}, passAndSalt: ${passAndSalt.hash}`
-    );
-    return passAndSalt.hash === hashBanco;
-  }
   let email = "otaldobrabinho@gmail.com";
   Account.findOne({
     where: {
@@ -59,31 +44,18 @@ router.get("/api/login/", (req, res) => {
     },
   }).then((account) => {
     let receivedAccount = account;
-    res.send(
-      receivedAccount.password +
-        " " +
-        receivedAccount.salt +
-        " " +
-        getResponse(
-          "senha123senha123",
-          receivedAccount.salt,
-          receivedAccount.password
-        )
-    );
+    res.send(receivedAccount.password + " " + receivedAccount.salt);
   });
 });
 
 router.post("/api/accounts", (req, res) => {
   let email = req.body.email;
   let name = req.body.name;
-  let password = req.body.password;
-  let salt = generateSalt();
-  let hashAndSalt = sha512(password, salt);
+  let password = encryptPassword(req.body.password);
   Account.create({
     email: email,
     name: name,
-    password: hashAndSalt.hash,
-    salt: hashAndSalt.salt,
+    password: password,
   })
     .then(() => {
       res.json({

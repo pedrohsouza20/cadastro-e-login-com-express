@@ -14,10 +14,6 @@ const Account = connection.define("accounts", {
     type: Sequelize.STRING,
     allowNull: false,
   },
-  salt: {
-    type: Sequelize.TEXT,
-    allowNull: false,
-  },
   token: {
     type: Sequelize.TEXT,
     allowNull: true,
