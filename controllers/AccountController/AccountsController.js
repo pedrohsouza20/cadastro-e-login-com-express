@@ -5,13 +5,8 @@ const Account = require("./Account");
 
 const crypto = require("crypto");
 
-const CRYPTO_SETS = {
-  algorythim: "aes-256-cbc",
-  secret: "youllneverfinditimsorrylittleboy",
-  type: "hex",
-  key: crypto.randomBytes(32),
-  iv: crypto.randomBytes(16),
-};
+const encryptPassword = require("../../services/login/encrypt-password");
+const { json } = require("express/lib/response");
 
 router.get("/api/accounts", (req, res) => {
   Account.findAll()
@@ -26,16 +21,6 @@ router.get("/api/accounts", (req, res) => {
     });
 });
 
-function encryptPassword(password) {
-  const cipher = crypto.createCipheriv(
-    CRYPTO_SETS.algorythim,
-    Buffer.from(CRYPTO_SETS.key),
-    CRYPTO_SETS.iv
-  );
-  cipher.update(password);
-  return cipher.final(CRYPTO_SETS.type);
-}
-
 router.get("/api/login/", (req, res) => {
   let email = "otaldobrabinho@gmail.com";
   Account.findOne({
@@ -48,7 +33,7 @@ router.get("/api/login/", (req, res) => {
   });
 });
 
-router.post("/api/accounts", (req, res) => {
+router.post("/api/account", (req, res) => {
   let email = req.body.email;
   let name = req.body.name;
   let password = encryptPassword(req.body.password);
