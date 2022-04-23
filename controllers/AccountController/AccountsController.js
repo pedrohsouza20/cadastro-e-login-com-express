@@ -3,10 +3,7 @@ const router = express.Router();
 
 const Account = require("./Account");
 
-const crypto = require("crypto");
-
 const encryptPassword = require("../../services/login/encrypt-password");
-const { json } = require("express/lib/response");
 
 router.get("/api/accounts", (req, res) => {
   Account.findAll()
@@ -21,7 +18,7 @@ router.get("/api/accounts", (req, res) => {
     });
 });
 
-router.get("/api/login/", (req, res) => {
+router.get("/api/get-accounts/", (req, res) => {
   let email = "otaldobrabinho@gmail.com";
   Account.findOne({
     where: {

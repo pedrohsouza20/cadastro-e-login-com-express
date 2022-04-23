@@ -3,6 +3,7 @@ const app = express();
 const connection = require("./../database/database");
 
 const accountsController = require("./../controllers/AccountController/AccountsController");
+const loginController = require("./../controllers/LoginController/LoginController");
 
 const Accounts = require("./../controllers/AccountController/Account");
 
@@ -25,6 +26,7 @@ connection
 app.use(cors());
 
 app.use("/", accountsController);
+app.use("/", loginController);
 
 app.get("/first-rest-api-route", (req, res) => {
   res.json(namesList);
